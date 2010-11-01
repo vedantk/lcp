@@ -1,0 +1,41 @@
+Notes:
+	- 100 data sets!
+	- 100 - 450 slices apiece
+	- start right below throat, end right below lungs
+	- voxel size is a constant for each data set
+	- ranges from 0.5 to 7.0 mm (per side; x = y = z)
+	- input: 512x512 {bmp, pgm}
+	- output: 512x512 pgm
+
+(Empirical) Classifications (vox = voxel):
+	- B(kgd)-vox = [0, 50]
+	- C(hest)-vox = [150, 255]
+	- L(ung)-vox = [25, 150]
+	- N(oise)-vox = 255
+
+
+--------------------------------------------------------------------------------
+List of steps | detail
+
+1. (possible) 3d median smoothing
+	-- for every voxel, check 27 neighbors and sort them.
+	-- pick the median and replace the initial voxel with its value
+	-- this makes the quality of the region-growing better
+	-- but at the expense of blurring or removing significant data
+
+2. Get rid of B-regions in the lung
+  -- run 3d region growing with seeds on the 4 edges of the root slice
+  -- it must mark all B-regions as 255
+  -- there is a fine line between B and C regions, but region growing should be able to crawl around it by trying to find a breach in the line in any slice
+
+3. Get rid of the chest region (or as much of it as possible)
+
+4. isolate the lung region as a black region in a new volume;
+	region grow the entire volume;
+		store white pixels -> new volume
+		skip black ones (the new volume is initialized to black anyways)
+		for every white pixel in the new volume, run the mgrf
+
+5. the new volume contains the boundary for the lung
+	
+
